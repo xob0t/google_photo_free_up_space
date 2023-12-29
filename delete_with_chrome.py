@@ -49,12 +49,6 @@ def delete_if_taking_space(driver, url):
     try:
         marker = driver.find_element(By.XPATH, marker_xpath)
     except NoSuchElementException:
-        pass
-
-    if marker and marker.text:
-        print("no space taken")
-        return False
-    else:
         delete_button = driver.find_element(By.XPATH, delete_button_xpath)
         delete_button.click()
         confirm_delete_buttons = driver.find_elements(By.XPATH, confirm_delete_button_xpath)
@@ -65,15 +59,50 @@ def delete_if_taking_space(driver, url):
                 print("moved to trash")
                 return True
 
+    if marker and marker.text:
+        print("no space taken")
+        return False
+
+
+def check_login(driver):
+    try:
+        driver.get("https://www.google.com/")
+        is_logged_in_xpath = "//*[contains(@href, 'SignOutOptions')]"
+        driver.find_element(By.XPATH, is_logged_in_xpath)
+        return True
+    except NoSuchElementException:
+        return False
+
+
+def login(profile_path):
+    driver = None
+    login_driver = None
+    try:
+        logged_in = False
+        if os.path.exists(profile_path):
+            driver = new_driver(profile_path, headless=True)
+            logged_in = check_login(driver)
+            driver.quit()
+        if not logged_in:
+            login_driver = new_driver(profile_path, headless=False)
+            while not check_login(driver=login_driver):
+                input("Please log into Google. Press Enter to continue")
+    finally:
+        driver.quit() if driver else None
+        login_driver.quit() if login_driver else None
+
 
 def main():
     photos_db_path = "photos_db.sqlite"
     headless = True
+    profile_path = os.path.join(os.getcwd(), "driver_profile")
+    with open("to_delete.txt", 'r') as file:
+        to_delete = file.read()
+    to_delete = to_delete.split("\n")
+    to_delete = [row for row in to_delete if row]
+    login(profile_path)
 
     while True:
-        profile_path = os.path.join(os.getcwd(), "driver_profile")
-        first_run = not os.path.exists(profile_path)
-
         with sqlite3.connect(photos_db_path) as photos_db:
             photos_db_cursor = photos_db.cursor()
             photos_db_cursor.execute("SELECT productUrl, filename FROM uploaded_media WHERE isChecked IS NULL OR isDeleted IS NULL")
@@ -83,25 +112,19 @@ def main():
                 print("Nothing to process")
                 break
 
-            if first_run:
-                headless = False
-                driver = new_driver(profile_path, headless=headless)
-                input("Please log in to Google. Press Enter to continue, then restart the script")
-                driver.quit()
-
-            with new_driver(profile_path, headless=headless) as driver:
-                for counter, item in enumerate(items):
-                    product_url, filename_db = item
-                    print(filename_db, f"{counter}/{len(items)}")
-
+        with new_driver(profile_path, headless=headless) as driver:
+            for counter, item in enumerate(items):
+                product_url, filename_db = item
+                print(filename_db, f"{counter}/{len(items)}")
+                if filename_db in to_delete:
                     if delete_if_taking_space(driver, product_url):
                         sqlite_query = "UPDATE uploaded_media SET isDeleted = ? WHERE productUrl = ?"
                     else:
                         sqlite_query = "UPDATE uploaded_media SET isChecked = ? WHERE productUrl = ?"
 
-                    parameters = (1, product_url)
-                    photos_db_cursor.execute(sqlite_query, parameters)
-                    photos_db.commit()
+                parameters = (1, product_url)
+                photos_db_cursor.execute(sqlite_query, parameters)
+                photos_db.commit()
 
 
 if __name__ == "__main__":

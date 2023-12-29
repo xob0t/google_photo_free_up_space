@@ -84,29 +84,31 @@ def new_service():
     photos_api = build('photoslibrary', 'v1', credentials=creds, static_discovery=False)
     return photos_api
 
+
 def get_photos_page(photos_api, next_page_token):
-    pageSize = 100 # 100 is Max
+    pageSize = 100  # 100 is Max
     items_request = photos_api.mediaItems().list(pageSize=pageSize, pageToken=next_page_token)
     response = items_request.execute()
     items = response.get('mediaItems', [])
     next_page_token = response.get('nextPageToken') or False
     return items, next_page_token
 
+
 def update_page_token(db_filename, next_page_token):
     sqlite_connection = sqlite3.connect(db_filename)
     cursor = sqlite_connection.cursor()
-    
+
     # Check if the first row exists
     cursor.execute("SELECT ROWID FROM script_data WHERE ROWID = 1")
     row = cursor.fetchone()
-    
+
     if row:
         # Update the existing row
         cursor.execute("UPDATE script_data SET last_processed_page = ? WHERE ROWID = 1", (next_page_token,))
     else:
         # Insert a new row
         cursor.execute("INSERT INTO script_data (ROWID, last_processed_page) VALUES (1, ?)", (next_page_token,))
-    
+
     cursor.close()
     sqlite_connection.commit()
 
@@ -123,6 +125,7 @@ def get_page_token(db_filename):
         return row[0] if row[0] != '0' else None
     else:
         return None
+
 
 def main():
     photos_api = new_service()
