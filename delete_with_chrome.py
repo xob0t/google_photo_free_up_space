@@ -107,10 +107,6 @@ def main():
     photos_db_path = "photos_db.sqlite"
     headless = True
     profile_path = os.path.join(os.getcwd(), "driver_profile")
-    with open("to_delete.txt", 'r') as file:
-        to_delete = file.read()
-    to_delete = to_delete.split("\n")
-    to_delete = [row for row in to_delete if row]
     login(profile_path)
 
     while True:
@@ -127,11 +123,10 @@ def main():
             for counter, item in enumerate(items):
                 product_url, filename_db = item
                 print(filename_db, f"{counter}/{len(items)}")
-                if filename_db in to_delete:
-                    if delete_if_taking_space(driver, product_url):
-                        sqlite_query = "UPDATE uploaded_media SET isDeleted = ? WHERE productUrl = ?"
-                    else:
-                        sqlite_query = "UPDATE uploaded_media SET isChecked = ? WHERE productUrl = ?"
+                if delete_if_taking_space(driver, product_url):
+                    sqlite_query = "UPDATE uploaded_media SET isDeleted = ? WHERE productUrl = ?"
+                else:
+                    sqlite_query = "UPDATE uploaded_media SET isChecked = ? WHERE productUrl = ?"
 
                 parameters = (1, product_url)
                 photos_db_cursor.execute(sqlite_query, parameters)
