@@ -15,6 +15,8 @@ def new_driver(profile_path=None, headless=False):
     chrome_options.add_argument("--ignore-certificate-errors")
     chrome_options.add_argument("--no-default-browser-check")
     chrome_options.add_argument("--disable-extensions")
+    chrome_options.add_argument("--disable-features=InterestFeedContentSuggestions")
+    chrome_options.add_argument('--disable-features=Translate')
 
     driver = uc.Chrome(
         options=chrome_options,
