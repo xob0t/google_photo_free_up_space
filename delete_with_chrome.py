@@ -105,7 +105,7 @@ def main():
     while True:
         with sqlite3.connect(photos_db_path) as photos_db:
             photos_db_cursor = photos_db.cursor()
-            photos_db_cursor.execute("SELECT productUrl, filename FROM uploaded_media WHERE isChecked IS NULL OR isDeleted IS NULL")
+            photos_db_cursor.execute("SELECT productUrl, filename FROM uploaded_media WHERE isChecked IS NULL AND isDeleted IS NULL")
             items = photos_db_cursor.fetchall()
 
             if not items:
