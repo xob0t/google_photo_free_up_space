@@ -1,17 +1,18 @@
 import os
 import sqlite3
 
-import undetected_chromedriver as uc
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from seleniumwire import undetected_chromedriver as uc
 
 
 def new_driver(profile_path=None, headless=False):
     chrome_options = uc.ChromeOptions()
     chrome_options.add_argument("--mute-audio")
     chrome_options.add_argument("--no-first-run")
+    chrome_options.add_argument("--ignore-certificate-errors")
 
     driver = uc.Chrome(
         options=chrome_options,
@@ -20,10 +21,16 @@ def new_driver(profile_path=None, headless=False):
         # browser_executable_path="C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
     )
 
-    # delete_player_js = open('delete_player.js').read()
-    # driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {'source': delete_player_js})
-    driver.execute_cdp_cmd('Network.setBlockedURLs', {"urls": ["https://youtube.googleapis.com"]})
-    driver.execute_cdp_cmd('Network.enable', {})
+    if headless:
+        driver.execute_cdp_cmd('Network.setBlockedURLs', {"urls": ["https://youtube.googleapis.com"]})
+        driver.execute_cdp_cmd('Network.enable', {})
+
+        def interceptor(request):
+            accept = request.headers.get('Accept')
+            if accept == "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8":
+                request.abort()
+
+        driver.request_interceptor = interceptor
     return driver
 
 
