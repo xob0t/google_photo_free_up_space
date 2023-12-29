@@ -13,6 +13,8 @@ def new_driver(profile_path=None, headless=False):
     chrome_options.add_argument("--mute-audio")
     chrome_options.add_argument("--no-first-run")
     chrome_options.add_argument("--ignore-certificate-errors")
+    chrome_options.add_argument("--no-default-browser-check")
+    chrome_options.add_argument("--disable-extensions")
 
     driver = uc.Chrome(
         options=chrome_options,
