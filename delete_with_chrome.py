@@ -110,27 +110,30 @@ def main():
     login(profile_path)
 
     while True:
-        with sqlite3.connect(photos_db_path) as photos_db:
-            photos_db_cursor = photos_db.cursor()
-            photos_db_cursor.execute("SELECT productUrl, filename FROM uploaded_media WHERE isChecked IS NULL AND isDeleted IS NULL")
-            items = photos_db_cursor.fetchall()
+        try:
+            with sqlite3.connect(photos_db_path) as photos_db:
+                photos_db_cursor = photos_db.cursor()
+                photos_db_cursor.execute("SELECT productUrl, filename FROM uploaded_media WHERE isChecked IS NULL AND isDeleted IS NULL")
+                items = photos_db_cursor.fetchall()
 
-            if not items:
-                print("Nothing to process")
-                break
+                if not items:
+                    print("Nothing to process")
+                    break
 
-        with new_driver(profile_path, headless=headless) as driver:
-            for counter, item in enumerate(items):
-                product_url, filename_db = item
-                print(filename_db, f"{counter}/{len(items)}")
-                if delete_if_taking_space(driver, product_url):
-                    sqlite_query = "UPDATE uploaded_media SET isDeleted = ? WHERE productUrl = ?"
-                else:
-                    sqlite_query = "UPDATE uploaded_media SET isChecked = ? WHERE productUrl = ?"
+            with new_driver(profile_path, headless=headless) as driver:
+                for counter, item in enumerate(items):
+                    product_url, filename_db = item
+                    print(filename_db, f"{counter}/{len(items)}")
+                    if delete_if_taking_space(driver, product_url):
+                        sqlite_query = "UPDATE uploaded_media SET isDeleted = ? WHERE productUrl = ?"
+                    else:
+                        sqlite_query = "UPDATE uploaded_media SET isChecked = ? WHERE productUrl = ?"
 
-                parameters = (1, product_url)
-                photos_db_cursor.execute(sqlite_query, parameters)
-                photos_db.commit()
+                    parameters = (1, product_url)
+                    photos_db_cursor.execute(sqlite_query, parameters)
+                    photos_db.commit()
+        except Exception as e:
+            print(e)
 
 
 if __name__ == "__main__":
