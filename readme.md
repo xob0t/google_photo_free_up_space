@@ -1,6 +1,6 @@
 ## photos_db_update.py
 
-credentials.json - https://console.developers.google.com/apis/
+credentials.json - https://developers.google.com/photos/library/guides/get-started#enable-the-api
 
 ```
 pip install google-auth google-auth-oauthlib google-api-python-client
