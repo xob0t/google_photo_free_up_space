@@ -2,5 +2,5 @@
 token.pickle
 photos_db.sqlite
 credentials.json
-driver_profile/
+driver_data/
 .vscode/
