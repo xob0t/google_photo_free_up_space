@@ -1,6 +1,10 @@
+# whitelist
 
-token.pickle
-photos_db.sqlite
-credentials.json
-driver_data/
-.vscode/
+*
+!*/
+
+!.gitignore
+!.chrome_google_login.py
+!.delete_with_chrome.py
+!.readme.md
+!.photos_db_update.py
