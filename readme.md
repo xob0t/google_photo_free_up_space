@@ -1,3 +1,5 @@
+# Use [Google Photos Toolkit](https://github.com/xob0t/Google-Photos-Toolkit) instead
+
 A few scripts to help you delete all media from your google photos that is taking up storage in your account.
 
 Dependencies:
